@@ -1,0 +1,30 @@
+[
+  {
+    "name": "source",
+    "type": "STRING"
+  },
+  {
+    "name": "event_type",
+    "type": "STRING"
+  },
+  {
+    "name": "id",
+    "type": "STRING"
+  },
+  {
+    "name": "metadata",
+    "type": "JSON"
+  },
+  {
+    "name": "time_created",
+    "type": "TIMESTAMP"
+  },
+  {
+    "name": "signature",
+    "type": "STRING"
+  },
+  {
+    "name": "msg_id",
+    "type": "STRING"
+  }
+]
