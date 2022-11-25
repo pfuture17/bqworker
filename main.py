@@ -27,6 +27,7 @@ def index():
     msg = envelope["message"]
 
     try:
+        # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
         transform_payload(msg)
 
