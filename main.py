@@ -1,7 +1,44 @@
 import json
 import logging
-from constant import TABLE_ID, KEYS_NOT_NEEDED_IN_RESULTS, KEYS_NOT_NEEDED_IN_COMPLIANCES, KEYS_NOT_NEEDED_IN_VULNERABILITIES
-from shared.process_cloud_event import process_cloud_event, setup_cloud_logging
+import base64
+from constant import TABLE_ID, KEYS_NOT_NEEDED_IN_RESULTS, KEYS_NOT_NEEDED_IN_COMPLIANCES, KEYS_NOT_NEEDED_IN_VULNERABILITIES, PORT
+from shared.insert_to_bq import process_bq_insertion, setup_cloud_logging
+
+from flask import Flask, request
+
+app = Flask(__name__)
+
+
+@app.route("/", methods=["POST"])
+def index():
+    """
+    Receives messages from a push subscription from Pub/Sub.
+    Parses the message, and inserts it into BigQuery.
+    """
+    # Check request for JSON
+    if not request.is_json:
+        raise Exception("Expecting JSON payload")
+    envelope = request.get_json()
+
+    # Check that message is a valid pub/sub message
+    if envelope.get("message") is None:
+        raise Exception("Not a valid Pub/Sub Message")
+
+    msg = envelope["message"]
+
+    try:
+        transform_payload(msg)
+
+    except Exception as e:
+        entry = {
+            "severity": "WARNING",
+            "msg": "Data not saved to BigQuery",
+            "errors": str(e),
+            "json_payload": envelope
+        }
+        logging.error(json.dumps(entry))
+
+    return "", 204
 
 
 def transform_payload(scan_results):
