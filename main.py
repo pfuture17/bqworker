@@ -96,4 +96,4 @@ def transform_payload(msg):
 
 
 if __name__ == "__main__":
-    process_event()
+    app.run(host="127.0.0.1", port=int(PORT), debug=True)
