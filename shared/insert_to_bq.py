@@ -18,22 +18,24 @@ def setup_cloud_logging():
 
 
 def log_json_data(msg: str, data: dict):
+    '''Specifically used for logging json data'''
     json_str = json.dumps(data)
     logging.debug(f"{msg}: {json_str}")
 
 
 def write_to_bigquery(table_id: str, rows: list[dict]) -> Sequence[dict]:
-    # insert payload into the bq
+    '''Insert payload into BigQuery'''
     client = bigquery.Client()
 
     bq_errors = client.insert_rows_json(
         table_id, rows, row_ids=[None] * len(rows))
+    
+    if bq_errors is not None:
+        raise Exception(bq_errors)
 
-    return bq_errors
 
-
-def process_cloud_event(cloud_event: dict, table_id: str) -> Sequence[dict]:
-    # processing payload/setting up
+def process_bq_insertion(cloud_event: dict, table_id: str) -> Sequence[dict]:
+    '''One last preparation before inserting to BigQuery'''
     metadata = cloud_event["metadata"]
     row = dict()
 
@@ -43,4 +45,5 @@ def process_cloud_event(cloud_event: dict, table_id: str) -> Sequence[dict]:
 
     log_json_data("Row to be inserted to bigquery", row)
 
-    return write_to_bigquery(table_id, rows=[row])
+    write_to_bigquery(table_id, rows=[row])
+    
