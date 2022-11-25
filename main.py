@@ -34,32 +34,6 @@ def setup_cloud_logging():
         level=logging.DEBUG)
 
 
-def process_cloud_event(cloud_event: dict) -> Sequence[dict]:
-    # processing payload/setting up
-    metadata = cloud_event["metadata"]
-    row = dict()
-    for key in CLOUD_EVENT_ATTRIBUTES:
-        row[key] = cloud_event.get(key)
-    row["metadata"] = json.dumps(metadata)
-
-    table_id = "off-net-dev.prisma.events_raw3"
-    log_json_data("Storing cloud deploy data", row)
-    return write_to_bigquery(table_id, rows=[row])
-
-
-def write_to_bigquery(table_id: str, rows: list[dict]) -> Sequence[dict]:
-    # insert payload into the bq
-    client = bigquery.Client()
-    bq_errors = client.insert_rows_json(
-        table_id, rows, row_ids=[None] * len(rows))
-    return bq_errors
-
-
-def log_json_data(msg: str, data: dict):
-    json_str = json.dumps(data)
-    logging.debug(f"{msg}: {json_str}")
-
-
 def transform_payload(data):
     scan_results = data
     # remove keys that are not needed to reduce payload size
@@ -90,6 +64,32 @@ def transform_payload(data):
         "msg_id": "msg id from pubsub"
     }
     return process_cloud_event(event_payload)
+
+
+def process_cloud_event(cloud_event: dict) -> Sequence[dict]:
+    # processing payload/setting up
+    metadata = cloud_event["metadata"]
+    row = dict()
+    for key in CLOUD_EVENT_ATTRIBUTES:
+        row[key] = cloud_event.get(key)
+    row["metadata"] = json.dumps(metadata)
+
+    table_id = "off-net-dev.prisma.events_raw3"
+    log_json_data("Storing cloud deploy data", row)
+    return write_to_bigquery(table_id, rows=[row])
+
+
+def write_to_bigquery(table_id: str, rows: list[dict]) -> Sequence[dict]:
+    # insert payload into the bq
+    client = bigquery.Client()
+    bq_errors = client.insert_rows_json(
+        table_id, rows, row_ids=[None] * len(rows))
+    return bq_errors
+
+
+def log_json_data(msg: str, data: dict):
+    json_str = json.dumps(data)
+    logging.debug(f"{msg}: {json_str}")
 
 
 def process_event():
