@@ -42,13 +42,13 @@ def transform_payload(scan_results):
     return process_cloud_event(event_payload, TABLE_ID)
 
 
-# temporary index for now
-def process_event():
-    setup_cloud_logging()
-    f = open('raw_payload.json')
-    s = open('raw_payload.json')
-    data = json.load(s)
-    transform_payload(data)
+# temporary index
+# def process_event():
+#     setup_cloud_logging()
+#     f = open('raw_payload.json')
+#     s = open('raw_payload.json')
+#     data = json.load(s)
+#     transform_payload(data)
 
 
 if __name__ == "__main__":
