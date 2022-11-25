@@ -29,7 +29,8 @@ def index():
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
-        transform_payload(msg)
+        cloud_event = transform_payload(msg)
+        process_bq_insertion(cloud_event, TABLE_ID)
 
     except Exception as e:
         entry = {
@@ -81,8 +82,8 @@ def transform_payload(msg):
     }
 
     logging.info(f'Transformed payload: {event_payload}')
-
-    process_bq_insertion(event_payload, TABLE_ID)
+    
+    return event_payload
 
 
 # temporary index
