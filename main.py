@@ -24,7 +24,16 @@ def index():
     if envelope.get("message") is None:
         raise Exception("Not a valid Pub/Sub Message")
 
-    msg = envelope["message"]
+    msg_ingest_layer = envelope["message"]
+    data_ingest_layer = json.loads(base64.b64decode(
+        msg_ingest_layer["data"]).decode("utf-8"))
+
+    msg = data_ingest_layer["data"]["message"]
+
+    # sample_request = open("sample_request.json", "w")
+    # sample_request.write(json.dumps(json.loads(base64.b64decode(
+    #     msg["data"]).decode("utf-8"))))
+    # sample_request.close()
 
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
@@ -48,7 +57,9 @@ def transform_payload(msg):
     '''Remove fields that are not needed to reduce payload size and transform the scan results into a cloud event'''
 
     scan_results = json.loads(base64.b64decode(
-        msg["data"]).decode("utf-8").strip())
+        msg["data"]).decode("utf-8"))
+
+    print(type(scan_results))
 
     # remove direct children of result[0] that are not needed
     for not_needed_key in KEYS_NOT_NEEDED_IN_RESULTS:
