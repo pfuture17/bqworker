@@ -27,6 +27,7 @@ def index():
     msg = envelope["message"]
 
     try:
+        setup_cloud_logging()
         transform_payload(msg)
 
     except Exception as e:
