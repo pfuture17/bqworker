@@ -30,6 +30,7 @@ def index():
 
     msg = data_ingest_layer["data"]["message"]
 
+    # TODO: remove this
     # sample_request = open("sample_request.json", "w")
     # sample_request.write(json.dumps(json.loads(base64.b64decode(
     #     msg["data"]).decode("utf-8"))))
@@ -39,14 +40,19 @@ def index():
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
         cloud_event = transform_payload(msg)
+
+        # TODO: remove this
+        # sample_transformed_payload = open("sample_transformed_payload.json", "w")
+        # sample_transformed_payload.write(json.dumps(cloud_event))
+        # sample_transformed_payload.close()
+
         process_bq_insertion(cloud_event, TABLE_ID)
 
     except Exception as e:
         entry = {
             "severity": "WARNING",
             "msg": "Data not saved to BigQuery",
-            "errors": str(e),
-            "json_payload": envelope
+            "errors": str(e)
         }
         logging.error(json.dumps(entry))
 
@@ -96,7 +102,7 @@ def transform_payload(msg):
 
     return event_payload
 
-
+# TODO: remove this
 # temporary index
 # def process_event():
 #     setup_cloud_logging()
