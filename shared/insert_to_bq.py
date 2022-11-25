@@ -25,6 +25,7 @@ def log_json_data(msg: str, data: dict):
 
 def write_to_bigquery(table_id: str, rows: list[dict]) -> Sequence[dict]:
     '''Insert payload into BigQuery'''
+    # will need to be authenticated here
     client = bigquery.Client()
 
     bq_errors = client.insert_rows_json(
