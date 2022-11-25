@@ -73,6 +73,7 @@ def transform_payload(msg):
         "id": scan_results["results"][0].get("id"),
         "metadata": scan_results,
         "time_created": scan_results["results"][0].get("scanTime"),
+        # should we use scanId as signaure?
         "signature": scan_results["results"][0].get("scanID"),
         "msg_id": msg.get("message_id")
     }
