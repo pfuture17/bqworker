@@ -41,8 +41,11 @@ def index():
     return "", 204
 
 
-def transform_payload(scan_results):
+def transform_payload(msg):
     '''Remove fields that are not needed to reduce payload size and transform the scan results into a cloud event'''
+
+    scan_results = json.loads(base64.b64decode(
+        msg["data"]).decode("utf-8").strip())
 
     # remove direct children of result[0] that are not needed
     for not_needed_key in KEYS_NOT_NEEDED_IN_RESULTS:
@@ -71,12 +74,12 @@ def transform_payload(scan_results):
         "metadata": scan_results,
         "time_created": scan_results["results"][0].get("scanTime"),
         "signature": scan_results["results"][0].get("scanID"),
-        "msg_id": "msg id from pubsub"
+        "msg_id": msg.get("message_id")
     }
 
     logging.info(f'Transformed payload: {event_payload}')
 
-    return process_cloud_event(event_payload, TABLE_ID)
+    process_bq_insertion(event_payload, TABLE_ID)
 
 
 # temporary index
