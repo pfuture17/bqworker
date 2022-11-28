@@ -5,8 +5,6 @@ DATASET = os.environ.get("BQ_DATASET", "prisma")
 EVENTS_RAW = os.environ.get("BQ_EVENTS_RAW_TABLE", "events_raw")
 PORT = os.environ.get("PORT", "8080")
 
-TABLE_ID = f'{PROJECT}.{DATASET}.{EVENTS_RAW}'
-
 KEYS_NOT_NEEDED_IN_RESULTS = {"packages", "distro", "distroRelease",
                               "complianceScanPassed", "complianceDistribution", "vulnerabilityDistribution", "vulnerabilityScanPassed", "history", "applications", "collections", "digest"}
 KEYS_NOT_NEEDED_IN_COMPLIANCES = {"layerTime", "category"}

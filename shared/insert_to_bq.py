@@ -1,6 +1,6 @@
 from google.cloud import bigquery
 from typing import Sequence
-from constant import CLOUD_EVENT_ATTRIBUTES
+from constant import DATASET, EVENTS_RAW
 import google.cloud.logging
 import logging
 import json
@@ -23,37 +23,35 @@ def log_json_data(msg: str, data: dict):
     logging.debug(f"{msg}: {json_str}")
 
 
-def write_to_bigquery(table_id: str, rows: list[tuple]) -> Sequence[dict]:
+def write_to_bigquery(rows: list[tuple]) -> Sequence[dict]:
     '''Insert payload into BigQuery'''
     # will need to be authenticated here
     client = bigquery.Client()
+    
+    table_ref = client.dataset(DATASET).table(EVENTS_RAW)
+    table = client.get_table(table_ref)
 
-    bq_errors = client.insert_rows_json(
-        table_id, rows, row_ids=[None] * len(rows))
+    bq_errors = client.insert_rows(
+        table, rows)
 
     if bq_errors is not None:
         raise Exception(bq_errors)
 
 
-def process_bq_insertion(cloud_event: dict, table_id: str) -> Sequence[dict]:
+def process_bq_insertion(cloud_event: dict) -> Sequence[dict]:
     '''One last preparation before inserting to BigQuery'''
-    metadata = cloud_event["metadata"]
-    row = dict()
-
-    for key in CLOUD_EVENT_ATTRIBUTES:
-        row[key] = cloud_event.get(key)
-    row["metadata"] = json.dumps(metadata)
+    cloud_event["metadata"] = json.dumps(cloud_event["metadata"])
 
     row_to_insert = (
-        row["event_type"],
-        row["id"],
-        row["metadata"],
-        row["time_created"],
-        row["signature"],
-        row["msg_id"],
-        row["source"],
+        cloud_event["event_type"],
+        cloud_event["id"],
+        cloud_event["metadata"],
+        cloud_event["time_created"],
+        cloud_event["signature"],
+        cloud_event["msg_id"],
+        cloud_event["source"],
     )
 
-    log_json_data("Row to be inserted to bigquery", row)
+    log_json_data("Row to be inserted to bigquery", row_to_insert)
 
-    write_to_bigquery(table_id, rows=[row_to_insert])
+    write_to_bigquery(rows=[row_to_insert])
