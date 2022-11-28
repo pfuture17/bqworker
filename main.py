@@ -30,21 +30,10 @@ def index():
 
     msg = data_ingest_layer["data"]["message"]
 
-    # TODO: remove this
-    # sample_request = open("sample_request.json", "w")
-    # sample_request.write(json.dumps(json.loads(base64.b64decode(
-    #     msg["data"]).decode("utf-8"))))
-    # sample_request.close()
-
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
         cloud_event = transform_payload(msg)
-
-        # TODO: remove this
-        # sample_transformed_payload = open("sample_transformed_payload.json", "w")
-        # sample_transformed_payload.write(json.dumps(cloud_event))
-        # sample_transformed_payload.close()
 
         process_bq_insertion(cloud_event)
 
@@ -101,15 +90,6 @@ def transform_payload(msg):
     logging.info(f'Transformed payload: {event_payload}')
 
     return event_payload
-
-# TODO: remove this
-# temporary index
-# def process_event():
-#     setup_cloud_logging()
-#     f = open('raw_payload.json')
-#     s = open('raw_payload.json')
-#     data = json.load(s)
-#     transform_payload(data)
 
 
 if __name__ == "__main__":

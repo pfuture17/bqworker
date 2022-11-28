@@ -16,17 +16,11 @@ def setup_cloud_logging():
         level=logging.DEBUG)
 
 
-def log_json_data(msg: str, data: dict):
-    '''Specifically used for logging json data'''
-    json_str = json.dumps(data)
-    logging.debug(f"{msg}: {json_str}")
-
-
 def write_to_bigquery(rows):
     '''Insert payload into BigQuery'''
     # will need to be authenticated here
     client = bigquery.Client()
-    
+
     table_ref = client.dataset(DATASET).table(EVENTS_RAW)
     table = client.get_table(table_ref)
 
@@ -49,6 +43,6 @@ def process_bq_insertion(cloud_event: dict):
         cloud_event["source"],
     )
 
-    log_json_data("Row to be inserted to bigquery", row_to_insert)
+    logging.INFO("Row to be inserted to bigquery", row_to_insert)
 
     write_to_bigquery([row_to_insert])
