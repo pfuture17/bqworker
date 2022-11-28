@@ -23,14 +23,14 @@ def log_json_data(msg: str, data: dict):
     logging.debug(f"{msg}: {json_str}")
 
 
-def write_to_bigquery(table_id: str, rows: list[dict]) -> Sequence[dict]:
+def write_to_bigquery(table_id: str, rows: list[tuple]) -> Sequence[dict]:
     '''Insert payload into BigQuery'''
     # will need to be authenticated here
     client = bigquery.Client()
 
     bq_errors = client.insert_rows_json(
         table_id, rows, row_ids=[None] * len(rows))
-    
+
     if bq_errors is not None:
         raise Exception(bq_errors)
 
@@ -44,7 +44,16 @@ def process_bq_insertion(cloud_event: dict, table_id: str) -> Sequence[dict]:
         row[key] = cloud_event.get(key)
     row["metadata"] = json.dumps(metadata)
 
+    row_to_insert = (
+        row["event_type"],
+        row["id"],
+        row["metadata"],
+        row["time_created"],
+        row["signature"],
+        row["msg_id"],
+        row["source"],
+    )
+
     log_json_data("Row to be inserted to bigquery", row)
 
-    write_to_bigquery(table_id, rows=[row])
-    
+    write_to_bigquery(table_id, rows=[row_to_insert])
