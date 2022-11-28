@@ -22,7 +22,7 @@ def log_json_data(msg: str, data: dict):
     logging.debug(f"{msg}: {json_str}")
 
 
-def write_to_bigquery(rows: list[tuple]):
+def write_to_bigquery(rows):
     '''Insert payload into BigQuery'''
     # will need to be authenticated here
     client = bigquery.Client()
