@@ -23,12 +23,13 @@ def log_json_data(msg: str, data: dict):
     logging.debug(f"{msg}: {json_str}")
 
 
-def write_to_bigquery(rows: list[tuple]) -> Sequence[dict]:
+def write_to_bigquery(rows: list[tuple]):
     '''Insert payload into BigQuery'''
     # will need to be authenticated here
     client = bigquery.Client()
     
-    table_ref = client.dataset(DATASET).table(EVENTS_RAW)
+    # table_ref = client.dataset("prisma").table("events_raw")
+    table_ref = "off-net-dev.prisma.events_raw"
     table = client.get_table(table_ref)
 
     bq_errors = client.insert_rows(
@@ -38,7 +39,7 @@ def write_to_bigquery(rows: list[tuple]) -> Sequence[dict]:
         raise Exception(bq_errors)
 
 
-def process_bq_insertion(cloud_event: dict) -> Sequence[dict]:
+def process_bq_insertion(cloud_event: dict):
     '''One last preparation before inserting to BigQuery'''
     cloud_event["metadata"] = json.dumps(cloud_event["metadata"])
 
