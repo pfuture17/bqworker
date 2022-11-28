@@ -91,7 +91,7 @@ def transform_payload(msg):
         "source": "prisma",
         "event_type": "pull_request",
         "id": scan_results["results"][0].get("id"),
-        "metadata": scan_results,
+        "metadata": json.dumps(scan_results),
         "time_created": scan_results["results"][0].get("scanTime"),
         # should we use scanId as signaure?
         "signature": scan_results["results"][0].get("scanID"),

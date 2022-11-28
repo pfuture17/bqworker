@@ -1,5 +1,4 @@
 from google.cloud import bigquery
-from typing import Sequence
 from constant import DATASET, EVENTS_RAW
 import google.cloud.logging
 import logging
@@ -28,21 +27,18 @@ def write_to_bigquery(rows: list[tuple]):
     # will need to be authenticated here
     client = bigquery.Client()
     
-    # table_ref = client.dataset("prisma").table("events_raw")
-    table_ref = "off-net-dev.prisma.events_raw"
+    table_ref = client.dataset(DATASET).table(EVENTS_RAW)
     table = client.get_table(table_ref)
 
     bq_errors = client.insert_rows(
         table, rows)
 
-    if bq_errors is not None:
+    if bq_errors:
         raise Exception(bq_errors)
 
 
 def process_bq_insertion(cloud_event: dict):
     '''One last preparation before inserting to BigQuery'''
-    cloud_event["metadata"] = json.dumps(cloud_event["metadata"])
-
     row_to_insert = (
         cloud_event["event_type"],
         cloud_event["id"],
@@ -55,4 +51,4 @@ def process_bq_insertion(cloud_event: dict):
 
     log_json_data("Row to be inserted to bigquery", row_to_insert)
 
-    write_to_bigquery(rows=[row_to_insert])
+    write_to_bigquery([row_to_insert])
