@@ -24,20 +24,35 @@ def index():
     if envelope.get("message") is None:
         raise Exception("Not a valid Pub/Sub Message")
 
-    msg = envelope["message"]
+    msg_ingest_layer = envelope["message"]
+    data_ingest_layer = json.loads(base64.b64decode(
+        msg_ingest_layer["data"]).decode("utf-8"))
+
+    msg = data_ingest_layer["data"]["message"]
+
+    # TODO: remove this
+    # sample_request = open("sample_request.json", "w")
+    # sample_request.write(json.dumps(json.loads(base64.b64decode(
+    #     msg["data"]).decode("utf-8"))))
+    # sample_request.close()
 
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
         cloud_event = transform_payload(msg)
+
+        # TODO: remove this
+        # sample_transformed_payload = open("sample_transformed_payload.json", "w")
+        # sample_transformed_payload.write(json.dumps(cloud_event))
+        # sample_transformed_payload.close()
+
         process_bq_insertion(cloud_event, TABLE_ID)
 
     except Exception as e:
         entry = {
             "severity": "WARNING",
             "msg": "Data not saved to BigQuery",
-            "errors": str(e),
-            "json_payload": envelope
+            "errors": str(e)
         }
         logging.error(json.dumps(entry))
 
@@ -48,26 +63,28 @@ def transform_payload(msg):
     '''Remove fields that are not needed to reduce payload size and transform the scan results into a cloud event'''
 
     scan_results = json.loads(base64.b64decode(
-        msg["data"]).decode("utf-8").strip())
+        msg["data"]).decode("utf-8"))
+
+    print(type(scan_results))
 
     # remove direct children of result[0] that are not needed
     for not_needed_key in KEYS_NOT_NEEDED_IN_RESULTS:
-        scan_results["results"][0].pop(not_needed_key)
+        scan_results["results"][0].pop(not_needed_key, None)
 
     # remove direct children of compliances that are not needed
     if(scan_results["results"][0].get("compliances")):
         for compliance in scan_results["results"][0]["compliances"]:
             for not_needed_key in KEYS_NOT_NEEDED_IN_COMPLIANCES:
-                compliance.pop(not_needed_key)
+                compliance.pop(not_needed_key, None)
 
     # remove direct children of vulnerabilities that are not needed
     if(scan_results["results"][0].get("vulnerabilities")):
         for vulnerability in scan_results["results"][0]["vulnerabilities"]:
             for not_needed_key in KEYS_NOT_NEEDED_IN_VULNERABILITIES:
-                vulnerability.pop(not_needed_key)
+                vulnerability.pop(not_needed_key, None)
 
     # we also don't need this
-    scan_results.pop("consoleURL")
+    scan_results.pop("consoleURL", None)
 
     # this is the cloud event
     event_payload = {
@@ -82,10 +99,10 @@ def transform_payload(msg):
     }
 
     logging.info(f'Transformed payload: {event_payload}')
-    
+
     return event_payload
 
-
+# TODO: remove this
 # temporary index
 # def process_event():
 #     setup_cloud_logging()
