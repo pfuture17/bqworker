@@ -2,7 +2,6 @@ from google.cloud import bigquery
 from constant import DATASET, EVENTS_RAW
 import google.cloud.logging
 import logging
-import json
 import os
 
 
@@ -43,6 +42,6 @@ def process_bq_insertion(cloud_event: dict):
         cloud_event["source"],
     )
 
-    logging.INFO("Row to be inserted to bigquery", row_to_insert)
+    logging.info("Row to be inserted to bigquery", row_to_insert)
 
     write_to_bigquery([row_to_insert])
