@@ -17,6 +17,9 @@ def setup_cloud_logging():
 
 def process_bq_insertion(cloud_event: dict):
     '''One last preparation before inserting to BigQuery'''
+    
+    logging.info("Execute process_bq_insertion")
+    
     client = bigquery.Client()
 
     table_ref = client.dataset(DATASET).table(EVENTS_RAW)
@@ -33,6 +36,8 @@ def process_bq_insertion(cloud_event: dict):
     )
 
     logging.info(f'Row to be inserted to BigQuery: {row_to_insert}')
+    
+    logging.info("Inserting to BigQuery...")
 
     bq_errors = client.insert_rows(
         table, row_to_insert)
