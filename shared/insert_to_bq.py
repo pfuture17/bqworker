@@ -13,25 +13,15 @@ def setup_cloud_logging():
     logging.basicConfig(
         format="%(asctime)s %(levelname)s [%(filename)s:%(lineno)d]: %(message)s",
         level=logging.DEBUG)
+    
 
-
-def write_to_bigquery(rows):
-    '''Insert payload into BigQuery'''
-    # will need to be authenticated here
+def process_bq_insertion(cloud_event: dict):
+    '''One last preparation before inserting to BigQuery'''
     client = bigquery.Client()
 
     table_ref = client.dataset(DATASET).table(EVENTS_RAW)
     table = client.get_table(table_ref)
-
-    bq_errors = client.insert_rows(
-        table, rows)
-
-    if bq_errors:
-        raise Exception(bq_errors)
-
-
-def process_bq_insertion(cloud_event: dict):
-    '''One last preparation before inserting to BigQuery'''
+    
     row_to_insert = (
         cloud_event["event_type"],
         cloud_event["id"],
@@ -42,6 +32,10 @@ def process_bq_insertion(cloud_event: dict):
         cloud_event["source"],
     )
 
-    logging.info("Row to be inserted to bigquery", row_to_insert)
+    logging.info(f'Row to be inserted to BigQuery: {row_to_insert}')
 
-    write_to_bigquery([row_to_insert])
+    bq_errors = client.insert_rows(
+        table, row_to_insert)
+
+    if bq_errors:
+        raise Exception(bq_errors)
