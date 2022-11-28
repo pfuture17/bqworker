@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED True
 
 # Copy application dependency manifests to the container image.
 # Copying this separately prevents re-running pip install on every code change.
-COPY requirements.txt . ./shared/
+COPY requirements.txt ./
 
 # Install production dependencies.gclo
 RUN pip install -r requirements.txt
