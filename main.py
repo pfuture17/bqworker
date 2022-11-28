@@ -34,14 +34,14 @@ def index():
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
         cloud_event = transform_payload(msg)
-
         process_bq_insertion(cloud_event)
 
     except Exception as e:
         entry = {
             "severity": "WARNING",
             "msg": "Data not saved to BigQuery",
-            "errors": str(e)
+            "errors": str(e),
+            "json_payload": envelope
         }
         logging.error(json.dumps(entry))
 
