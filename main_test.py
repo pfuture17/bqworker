@@ -47,30 +47,27 @@ def test_not_pubsub_message(client):
     assert "Not a valid Pub/Sub Message" in str(e.value)
 
 
-def test_github_event_processed(client):
-    headers = {"X-Github-Event": "push", "X-Hub-Signature": "foo"}
-    commit = json.dumps({"head_commit": {"timestamp": 0, "id": "bar"}}).encode(
-        "utf-8"
-    )
-    pubsub_msg = {
-        "message": {
-            "data": base64.b64encode(commit).decode("utf-8"),
-            "attributes": {"headers": json.dumps(headers)},
-            "message_id": "foobar",
-        },
-    }
+def test_github_event_processed(client, mock_process_bq_insertion):    
+    pubsub_msg = load_test_json_data('pubsub-payload-from-ingest-topic.json')
+    github_event = load_test_json_data('reduced-prisma-scan-vulnerabilities-pull-request.json')
+    
+    # pubsub_msg = {
+    #     "message": {
+    #         "data": base64.b64encode(commit).decode("utf-8"),
+    #         "attributes": {"headers": json.dumps(headers)},
+    #         "message_id": "foobar",
+    #     },
+    # }
 
-    github_event = {
-        "event_type": "push",
-        "id": "bar",
-        "metadata": '{"head_commit": {"timestamp": 0, "id": "bar"}}',
-        "time_created": 0,
-        "signature": "foo",
-        "msg_id": "foobar",
-        "source": "github",
-    }
-
-    shared.insert_row_into_bigquery = mock.MagicMock()
+    # github_event = {
+    #     "event_type": "pull_request",
+    #     "id": "sha256:b2d2872c3dff03356230c2a2c45dee8f16d01c29d3fe8b90e08f44ccd8c59f01",
+    #     "metadata": reduced_prisma_scan_results,
+    #     "time_created": "2022-11-21T14:14:19.775876608Z",
+    #     "signature": "637b87bb0598e00d2e01c30b",
+    #     "msg_id": "5877041794375121",
+    #     "source": "prisma",
+    # }
 
     r = client.post(
         "/",
@@ -78,7 +75,7 @@ def test_github_event_processed(client):
         headers={"Content-Type": "application/json"},
     )
 
-    shared.insert_row_into_bigquery.assert_called_with(github_event)
+    mock_process_bq_insertion.assert_called_with(github_event)
     assert r.status_code == 204
 
 
