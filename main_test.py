@@ -2,10 +2,9 @@ import base64
 import json
 import os
 import main
-import shared
-
 import mock
 import pytest
+import shared
 
 
 @pytest.fixture
@@ -79,55 +78,55 @@ def test_github_event_processed(client, mock_process_bq_insertion):
     assert r.status_code == 204
 
 
-def test_github_event_avoid_id_conflicts_pull_requests(client):
+# def test_github_event_avoid_id_conflicts_pull_requests(client):
 
-    headers = {"X-Github-Event": "pull_request", "X-Hub-Signature": "foo"}
-    commit = json.dumps({
-        "pull_request": {
-            "updated_at": "2021-06-15T13:12:14Z"
-        },
-        "repository": {
-            "name": "reponame"
-        },
-        "number": 477
-    }).encode("utf-8")
+#     headers = {"X-Github-Event": "pull_request", "X-Hub-Signature": "foo"}
+#     commit = json.dumps({
+#         "pull_request": {
+#             "updated_at": "2021-06-15T13:12:14Z"
+#         },
+#         "repository": {
+#             "name": "reponame"
+#         },
+#         "number": 477
+#     }).encode("utf-8")
 
-    encoded_commit = {
-        "data": base64.b64encode(commit).decode("utf-8"),
-        "attributes": {"headers": json.dumps(headers)},
-        "message_id": "foobar",
-    }
+#     encoded_commit = {
+#         "data": base64.b64encode(commit).decode("utf-8"),
+#         "attributes": {"headers": json.dumps(headers)},
+#         "message_id": "foobar",
+#     }
 
-    github_event_calculated = main.process_github_event(headers=headers, msg=encoded_commit)
-    github_event_expected = {
-        "id": "reponame/477"
-    }
+#     github_event_calculated = main.process_github_event(headers=headers, msg=encoded_commit)
+#     github_event_expected = {
+#         "id": "reponame/477"
+#     }
 
-    assert github_event_calculated["id"] == github_event_expected["id"]
+#     assert github_event_calculated["id"] == github_event_expected["id"]
 
 
-def test_github_event_avoid_id_conflicts_issues(client):
+# def test_github_event_avoid_id_conflicts_issues(client):
 
-    headers = {"X-Github-Event": "issues", "X-Hub-Signature": "foo"}
-    commit = json.dumps({
-        "issue": {
-            "updated_at": "2021-06-15T13:12:14Z",
-            "number": 477
-        },
-        "repository": {
-            "name": "reponame"
-        }
-    }).encode("utf-8")
+#     headers = {"X-Github-Event": "issues", "X-Hub-Signature": "foo"}
+#     commit = json.dumps({
+#         "issue": {
+#             "updated_at": "2021-06-15T13:12:14Z",
+#             "number": 477
+#         },
+#         "repository": {
+#             "name": "reponame"
+#         }
+#     }).encode("utf-8")
 
-    encoded_commit = {
-        "data": base64.b64encode(commit).decode("utf-8"),
-        "attributes": {"headers": json.dumps(headers)},
-        "message_id": "foobar",
-    }
+#     encoded_commit = {
+#         "data": base64.b64encode(commit).decode("utf-8"),
+#         "attributes": {"headers": json.dumps(headers)},
+#         "message_id": "foobar",
+#     }
 
-    github_event_calculated = main.process_github_event(headers=headers, msg=encoded_commit)
-    github_event_expected = {
-        "id": "reponame/477"
-    }
+#     github_event_calculated = main.process_github_event(headers=headers, msg=encoded_commit)
+#     github_event_expected = {
+#         "id": "reponame/477"
+#     }
 
-    assert github_event_calculated["id"] == github_event_expected["id"]
+#     assert github_event_calculated["id"] == github_event_expected["id"]
