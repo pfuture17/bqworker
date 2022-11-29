@@ -45,7 +45,7 @@ def index():
             "severity": "WARNING",
             "msg": "Data not saved to BigQuery",
             "errors": str(e),
-            "json_payload": envelope
+            # "json_payload": envelope
         }
         logging.error(json.dumps(entry))
 
@@ -61,7 +61,6 @@ def transform_payload(msg):
     scan_results = json.loads(base64.b64decode(
         msg["data"]).decode("utf-8"))
 
-    logging.info("Removing fields that are not needed...")
     # remove direct children of result[0] that are not needed
     for not_needed_key in KEYS_NOT_NEEDED_IN_RESULTS:
         scan_results["results"][0].pop(not_needed_key, None)
@@ -94,7 +93,7 @@ def transform_payload(msg):
         "msg_id": msg.get("message_id")
     }
 
-    logging.info(f'Transformed payload: {event_payload}')
+    # logging.info(f'Transformed payload: {event_payload}')
 
     return event_payload
 
