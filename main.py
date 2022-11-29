@@ -1,7 +1,7 @@
 import json
 import logging
 import base64
-from constant import TABLE_ID, KEYS_NOT_NEEDED_IN_RESULTS, KEYS_NOT_NEEDED_IN_COMPLIANCES, KEYS_NOT_NEEDED_IN_VULNERABILITIES, PORT
+from constant import KEYS_NOT_NEEDED_IN_RESULTS, KEYS_NOT_NEEDED_IN_COMPLIANCES, KEYS_NOT_NEEDED_IN_VULNERABILITIES, PORT
 from shared.insert_to_bq import process_bq_insertion, setup_cloud_logging
 
 from flask import Flask, request
@@ -30,29 +30,18 @@ def index():
 
     msg = data_ingest_layer["data"]["message"]
 
-    # TODO: remove this
-    # sample_request = open("sample_request.json", "w")
-    # sample_request.write(json.dumps(json.loads(base64.b64decode(
-    #     msg["data"]).decode("utf-8"))))
-    # sample_request.close()
-
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
         cloud_event = transform_payload(msg)
-
-        # TODO: remove this
-        # sample_transformed_payload = open("sample_transformed_payload.json", "w")
-        # sample_transformed_payload.write(json.dumps(cloud_event))
-        # sample_transformed_payload.close()
-
-        process_bq_insertion(cloud_event, TABLE_ID)
+        process_bq_insertion(cloud_event)
 
     except Exception as e:
         entry = {
             "severity": "WARNING",
             "msg": "Data not saved to BigQuery",
-            "errors": str(e)
+            "errors": str(e),
+            "json_payload": envelope
         }
         logging.error(json.dumps(entry))
 
@@ -91,7 +80,7 @@ def transform_payload(msg):
         "source": "prisma",
         "event_type": "pull_request",
         "id": scan_results["results"][0].get("id"),
-        "metadata": scan_results,
+        "metadata": json.dumps(scan_results),
         "time_created": scan_results["results"][0].get("scanTime"),
         # should we use scanId as signaure?
         "signature": scan_results["results"][0].get("scanID"),
@@ -101,15 +90,6 @@ def transform_payload(msg):
     logging.info(f'Transformed payload: {event_payload}')
 
     return event_payload
-
-# TODO: remove this
-# temporary index
-# def process_event():
-#     setup_cloud_logging()
-#     f = open('raw_payload.json')
-#     s = open('raw_payload.json')
-#     data = json.load(s)
-#     transform_payload(data)
 
 
 if __name__ == "__main__":

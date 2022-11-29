@@ -1,9 +1,7 @@
 from google.cloud import bigquery
-from typing import Sequence
-from constant import CLOUD_EVENT_ATTRIBUTES
+from constant import DATASET, EVENTS_RAW
 import google.cloud.logging
 import logging
-import json
 import os
 
 
@@ -15,36 +13,29 @@ def setup_cloud_logging():
     logging.basicConfig(
         format="%(asctime)s %(levelname)s [%(filename)s:%(lineno)d]: %(message)s",
         level=logging.DEBUG)
+    
 
-
-def log_json_data(msg: str, data: dict):
-    '''Specifically used for logging json data'''
-    json_str = json.dumps(data)
-    logging.debug(f"{msg}: {json_str}")
-
-
-def write_to_bigquery(table_id: str, rows: list[dict]) -> Sequence[dict]:
-    '''Insert payload into BigQuery'''
-    # will need to be authenticated here
+def process_bq_insertion(cloud_event: dict):
+    '''One last preparation before inserting to BigQuery'''
     client = bigquery.Client()
 
-    bq_errors = client.insert_rows_json(
-        table_id, rows, row_ids=[None] * len(rows))
+    table_ref = client.dataset(DATASET).table(EVENTS_RAW)
+    table = client.get_table(table_ref)
     
-    if bq_errors is not None:
+    row_to_insert = (
+        cloud_event["event_type"],
+        cloud_event["id"],
+        cloud_event["metadata"],
+        cloud_event["time_created"],
+        cloud_event["signature"],
+        cloud_event["msg_id"],
+        cloud_event["source"],
+    )
+
+    logging.info(f'Row to be inserted to BigQuery: {row_to_insert}')
+
+    bq_errors = client.insert_rows(
+        table, row_to_insert)
+
+    if bq_errors:
         raise Exception(bq_errors)
-
-
-def process_bq_insertion(cloud_event: dict, table_id: str) -> Sequence[dict]:
-    '''One last preparation before inserting to BigQuery'''
-    metadata = cloud_event["metadata"]
-    row = dict()
-
-    for key in CLOUD_EVENT_ATTRIBUTES:
-        row[key] = cloud_event.get(key)
-    row["metadata"] = json.dumps(metadata)
-
-    log_json_data("Row to be inserted to bigquery", row)
-
-    write_to_bigquery(table_id, rows=[row])
-    
