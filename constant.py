@@ -10,7 +10,3 @@ KEYS_NOT_NEEDED_IN_RESULTS = {"packages", "distro", "distroRelease",
 KEYS_NOT_NEEDED_IN_COMPLIANCES = {"layerTime", "category"}
 KEYS_NOT_NEEDED_IN_VULNERABILITIES = {"vector", "riskFactors",
                                       "impactedVersions", "publishedDate", "discoveredDate", "layerTime", "fixDate"}
-CLOUD_EVENT_ATTRIBUTES = [
-    "source", "event_type", "id", "metadata", "time_created", "signature",
-    "msg_id",
-]

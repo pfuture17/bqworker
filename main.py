@@ -15,6 +15,8 @@ def index():
     Receives messages from a push subscription from Pub/Sub.
     Parses the message, and inserts it into BigQuery.
     """
+    logging.debug("Execute index")
+    
     # Check request for JSON
     if not request.is_json:
         raise Exception("Expecting JSON payload")
@@ -23,7 +25,8 @@ def index():
     # Check that message is a valid pub/sub message
     if envelope.get("message") is None:
         raise Exception("Not a valid Pub/Sub Message")
-
+    
+    logging.info("Extracting message from pubsub envelope...")
     msg_ingest_layer = envelope["message"]
     data_ingest_layer = json.loads(base64.b64decode(
         msg_ingest_layer["data"]).decode("utf-8"))
@@ -33,6 +36,7 @@ def index():
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
         setup_cloud_logging()
+        logging.info("Starting process...")
         cloud_event = transform_payload(msg)
         process_bq_insertion(cloud_event)
 
@@ -50,12 +54,14 @@ def index():
 
 def transform_payload(msg):
     '''Remove fields that are not needed to reduce payload size and transform the scan results into a cloud event'''
+    
+    logging.info("Execute transform_payload")
 
+    logging.info("Decoding pubsub message...")
     scan_results = json.loads(base64.b64decode(
         msg["data"]).decode("utf-8"))
 
-    print(type(scan_results))
-
+    logging.info("Removing fields that are not needed...")
     # remove direct children of result[0] that are not needed
     for not_needed_key in KEYS_NOT_NEEDED_IN_RESULTS:
         scan_results["results"][0].pop(not_needed_key, None)
@@ -75,6 +81,7 @@ def transform_payload(msg):
     # we also don't need this
     scan_results.pop("consoleURL", None)
 
+    logging.info("Constructing cloud event...")
     # this is the cloud event
     event_payload = {
         "source": "prisma",
