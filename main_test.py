@@ -1,6 +1,6 @@
 import base64
 import json
-
+import os
 import main
 import shared
 
@@ -12,6 +12,13 @@ import pytest
 def client():
     main.app.testing = True
     return main.app.test_client()
+
+@ staticmethod
+def load_test_json_data(data_file: str) -> any:
+    """ Fixture to mock an input Pub/Sub event """
+    path = os.path.join(os.getcwd(), f"test_data/{data_file}")
+    with open(path, 'r', encoding='utf-8') as file:
+        return json.loads(file.read())
 
 
 def test_not_json(client):
