@@ -2,3 +2,4 @@ sample_request.json
 sample_transformed_payload.json
 __pycache__
 .coverage
+.pytest_cache
