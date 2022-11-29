@@ -13,7 +13,15 @@ def client():
     main.app.testing = True
     return main.app.test_client()
 
-@ staticmethod
+
+@ pytest.fixture(scope="function")
+def mock_process_bq_insertion(mocker):
+    """ Fixture to mock the Publisher Client """
+    mocked_process_bq_insertion = mocker.patch(
+        'shared.insert_to_bq.process_bq_insertion', autospec=True)
+    return mocked_process_bq_insertion
+
+
 def load_test_json_data(data_file: str) -> any:
     """ Fixture to mock an input Pub/Sub event """
     path = os.path.join(os.getcwd(), f"test_data/{data_file}")
