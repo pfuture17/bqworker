@@ -34,10 +34,10 @@ def index():
     msg = data_ingest_layer["data"]["message"]
 
     try:
-        # these are the main functions that are called throughout the whole process, begin following call stack in transform_payload
+        # these are the main functions that are called throughout the whole process, begin following call stack in construct_raw_event
         setup_cloud_logging()
         logging.info("Starting process...")
-        cloud_event = transform_payload(msg)
+        cloud_event = construct_raw_event(msg)
         process_bq_insertion(cloud_event)
 
     except Exception as e:
@@ -52,36 +52,17 @@ def index():
     return "", 204
 
 
-def transform_payload(msg):
+def construct_raw_event(msg):
     '''Remove fields that are not needed to reduce payload size and transform the scan results into a cloud event'''
     
-    logging.info("Execute transform_payload")
+    logging.info("Execute construct_raw_event")
 
     logging.info("Decoding pubsub message...")
     scan_results = json.loads(base64.b64decode(
         msg["data"]).decode("utf-8"))
 
-    # remove direct children of result[0] that are not needed
-    for not_needed_key in KEYS_NOT_NEEDED_IN_RESULTS:
-        scan_results["results"][0].pop(not_needed_key, None)
-
-    # remove direct children of compliances that are not needed
-    if(scan_results["results"][0].get("compliances")):
-        for compliance in scan_results["results"][0]["compliances"]:
-            for not_needed_key in KEYS_NOT_NEEDED_IN_COMPLIANCES:
-                compliance.pop(not_needed_key, None)
-
-    # remove direct children of vulnerabilities that are not needed
-    if(scan_results["results"][0].get("vulnerabilities")):
-        for vulnerability in scan_results["results"][0]["vulnerabilities"]:
-            for not_needed_key in KEYS_NOT_NEEDED_IN_VULNERABILITIES:
-                vulnerability.pop(not_needed_key, None)
-
-    # we also don't need this
-    scan_results.pop("consoleURL", None)
-
-    logging.info("Constructing cloud event...")
-    # this is the cloud event
+    logging.info("Constructing raw event...")
+    # this is the raw event to be inserted to events_raw table
     event_payload = {
         "source": "prisma",
         "event_type": "pull_request",
@@ -93,7 +74,7 @@ def transform_payload(msg):
         "msg_id": msg.get("message_id")
     }
 
-    # logging.info(f'Transformed payload: {event_payload}')
+    logging.info(f'Constructed payload: {event_payload}')
 
     return event_payload
 
