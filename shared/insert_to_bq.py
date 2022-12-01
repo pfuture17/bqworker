@@ -25,7 +25,7 @@ def process_bq_insertion(cloud_event: dict):
     table_ref = client.dataset(DATASET).table(EVENTS_RAW)
     table = client.get_table(table_ref)
     
-    row_to_insert = (
+    row_to_insert = [(
         cloud_event["event_type"],
         cloud_event["id"],
         cloud_event["metadata"],
@@ -33,7 +33,7 @@ def process_bq_insertion(cloud_event: dict):
         cloud_event["signature"],
         cloud_event["msg_id"],
         cloud_event["source"],
-    )
+    )]
 
     # logging.info(f'Row to be inserted to BigQuery: {row_to_insert}')
     
