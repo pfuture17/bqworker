@@ -37,8 +37,8 @@ def index():
         # these are the main functions that are called throughout the whole process, begin following call stack in construct_raw_event
         setup_cloud_logging()
         logging.info("Starting process...")
-        cloud_event = construct_raw_event(msg)
-        process_bq_insertion(cloud_event)
+        raw_event = construct_raw_event(msg)
+        process_bq_insertion(raw_event)
 
     except Exception as e:
         entry = {
