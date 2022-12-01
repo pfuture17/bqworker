@@ -4,18 +4,7 @@ import google.cloud.logging
 import logging
 import os
 
-
-def setup_cloud_logging():
-    # Only use the root logger from the 'logging' package to push everything to Cloud Logging.
-    if "GOOGLE_APPLICATION_CREDENTIALS" in os.environ:
-        # We only configure Cloud Logging when we have appropriate credentials available.
-        google.cloud.logging.Client().setup_logging(log_level=logging.DEBUG)
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s [%(filename)s:%(lineno)d]: %(message)s",
-        level=logging.DEBUG)
-    
-
-def process_bq_insertion(cloud_event: dict):
+def process_bq_insertion(raw_event: dict):
     '''One last preparation before inserting to BigQuery'''
     
     logging.info("Execute process_bq_insertion")
@@ -26,13 +15,13 @@ def process_bq_insertion(cloud_event: dict):
     table = client.get_table(table_ref)
     
     row_to_insert = [(
-        cloud_event["event_type"],
-        cloud_event["id"],
-        cloud_event["metadata"],
-        cloud_event["time_created"],
-        cloud_event["signature"],
-        cloud_event["msg_id"],
-        cloud_event["source"],
+        raw_event["event_type"],
+        raw_event["id"],
+        raw_event["metadata"],
+        raw_event["time_created"],
+        raw_event["signature"],
+        raw_event["msg_id"],
+        raw_event["source"],
     )]
 
     logging.info(f'Row to be inserted to BigQuery: {row_to_insert}')
