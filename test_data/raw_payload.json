@@ -12095,7 +12095,7 @@
           "status": "open",
           "cvss": 5.5,
           "vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:N/I:N/A:H",
-          "description": "A heap-buffer-overflow flaw was found in ImageMagick’s PushShortPixel() function of quantum-private.h file. This vulnerability is triggered when an attacker passes a specially crafted TIFF image file to ImageMagick for conversion, potentially leading to a denial of service.",
+          "description": "A heap-buffer-overflow flaw was found in ImageMagickâ€™s PushShortPixel() function of quantum-private.h file. This vulnerability is triggered when an attacker passes a specially crafted TIFF image file to ImageMagick for conversion, potentially leading to a denial of service.",
           "severity": "low",
           "packageName": "imagemagick",
           "packageVersion": "8:6.9.10.23+dfsg-2.1+deb10u1",
