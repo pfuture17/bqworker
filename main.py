@@ -1,7 +1,7 @@
 import json
 import logging
 import base64
-from constant import KEYS_NOT_NEEDED_IN_RESULTS, KEYS_NOT_NEEDED_IN_COMPLIANCES, KEYS_NOT_NEEDED_IN_VULNERABILITIES, PORT
+from constant import PORT
 from shared.insert_to_bq import process_bq_insertion, setup_cloud_logging
 
 from flask import Flask, request
