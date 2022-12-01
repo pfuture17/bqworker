@@ -52,7 +52,7 @@ def index():
 
 
 def construct_raw_event(msg):
-    '''Remove fields that are not needed to reduce payload size and transform the scan results into a cloud event'''
+    '''Contruct the raw event that will be inserted into BigQuery'''
     
     logging.info("Execute construct_raw_event")
 
