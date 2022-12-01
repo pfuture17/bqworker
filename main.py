@@ -15,7 +15,7 @@ def index():
     Receives messages from a push subscription from Pub/Sub.
     Parses the message, and inserts it into BigQuery.
     """
-    # print("Execute index")
+    logging.info("Execute index")
     
     # Check request for JSON
     if not request.is_json:
@@ -26,7 +26,7 @@ def index():
     if envelope.get("message") is None:
         raise Exception("Not a valid Pub/Sub Message")
     
-    # print("Extracting message from pubsub envelope...")
+    logging.info("Extracting message from pubsub envelope...")
     msg_ingest_layer = envelope["message"]
     data_ingest_layer = json.loads(base64.b64decode(
         msg_ingest_layer["data"]).decode("utf-8"))
@@ -36,7 +36,7 @@ def index():
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in construct_raw_event
         setup_cloud_logging()
-        # print("Starting process...")
+        logging.info("Starting process...")
         raw_event = construct_raw_event(msg)
         process_bq_insertion(raw_event)
 
@@ -45,6 +45,7 @@ def index():
             "severity": "WARNING",
             "msg": "Data not saved to BigQuery",
             "errors": str(e),
+            "json_payload": envelope
         }
         logging.error(json.dumps(entry))
 
@@ -54,13 +55,13 @@ def index():
 def construct_raw_event(msg):
     '''Contruct the raw event that will be inserted into BigQuery'''
     
-    # print("Execute construct_raw_event")
+    logging.info("Execute construct_raw_event")
 
-    # print("Decoding pubsub message...")
+    logging.info("Decoding pubsub message...")
     scan_results = json.loads(base64.b64decode(
         msg["data"]).decode("utf-8"))
 
-    # print("Constructing raw event...")
+    logging.info("Constructing raw event...")
     # this is the raw event to be inserted to events_raw table
     event_payload = {
         "source": "prisma",
@@ -73,7 +74,7 @@ def construct_raw_event(msg):
         "msg_id": msg.get("message_id")
     }
 
-    # print(f'Constructed payload: {event_payload}')
+    logging.info(f'Constructed payload: {event_payload}')
 
     return event_payload
 
