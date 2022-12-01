@@ -39,7 +39,7 @@ def test_not_pubsub_message(client):
 
 def test_prisma_event_process(client):    
     pubsub_msg = load_test_json_data('pubsub-payload-from-ingest-topic.json')
-    prisma_event = load_test_json_data('reduced-prisma-scan-vulnerabilities-pull-request.json')
+    prisma_event = load_test_json_data('constructed-raw-event.json')
     
     main.process_bq_insertion = mock.MagicMock()
 
@@ -49,7 +49,7 @@ def test_prisma_event_process(client):
         headers={"Content-Type": "application/json"},
     )
     
-    prisma_event['metadata'] = json.dumps(prisma_event['metadata'])
+    prisma_event["metadata"] = json.dumps(prisma_event["metadata"])
 
     main.process_bq_insertion.assert_called_with(prisma_event)
     assert r.status_code == 204
