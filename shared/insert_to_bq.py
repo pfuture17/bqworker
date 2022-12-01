@@ -1,13 +1,10 @@
 from google.cloud import bigquery
 from constant import DATASET, EVENTS_RAW
-import google.cloud.logging
-import logging
-import os
 
 def process_bq_insertion(raw_event: dict):
     '''One last preparation before inserting to BigQuery'''
     
-    logging.info("Execute process_bq_insertion")
+    print("Execute process_bq_insertion")
     
     client = bigquery.Client()
 
@@ -24,9 +21,9 @@ def process_bq_insertion(raw_event: dict):
         raw_event["source"],
     )]
 
-    logging.info(f'Row to be inserted to BigQuery: {row_to_insert}')
+    print(f'Row to be inserted to BigQuery: {row_to_insert}')
     
-    logging.info("Inserting to BigQuery...")
+    print("Inserting to BigQuery...")
 
     bq_errors = client.insert_rows(
         table, row_to_insert)

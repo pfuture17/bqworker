@@ -1,8 +1,7 @@
 import json
-import logging
 import base64
 from constant import PORT
-from shared.insert_to_bq import process_bq_insertion, setup_cloud_logging
+from shared.insert_to_bq import process_bq_insertion
 
 from flask import Flask, request
 
@@ -15,7 +14,7 @@ def index():
     Receives messages from a push subscription from Pub/Sub.
     Parses the message, and inserts it into BigQuery.
     """
-    logging.info("Execute index")
+    print("Execute index")
     
     # Check request for JSON
     if not request.is_json:
@@ -26,7 +25,7 @@ def index():
     if envelope.get("message") is None:
         raise Exception("Not a valid Pub/Sub Message")
     
-    logging.info("Extracting message from pubsub envelope...")
+    print("Extracting message from pubsub envelope...")
     msg_ingest_layer = envelope["message"]
     data_ingest_layer = json.loads(base64.b64decode(
         msg_ingest_layer["data"]).decode("utf-8"))
@@ -35,8 +34,7 @@ def index():
 
     try:
         # these are the main functions that are called throughout the whole process, begin following call stack in construct_raw_event
-        setup_cloud_logging()
-        logging.info("Starting process...")
+        print("Starting process...")
         raw_event = construct_raw_event(msg)
         process_bq_insertion(raw_event)
 
@@ -47,7 +45,7 @@ def index():
             "errors": str(e),
             "json_payload": envelope
         }
-        logging.error(json.dumps(entry))
+        print(json.dumps(entry))
 
     return "", 204
 
@@ -55,13 +53,13 @@ def index():
 def construct_raw_event(msg):
     '''Contruct the raw event that will be inserted into BigQuery'''
     
-    logging.info("Execute construct_raw_event")
+    print("Execute construct_raw_event")
 
-    logging.info("Decoding pubsub message...")
+    print("Decoding pubsub message...")
     scan_results = json.loads(base64.b64decode(
         msg["data"]).decode("utf-8"))
 
-    logging.info("Constructing raw event...")
+    print("Constructing raw event...")
     # this is the raw event to be inserted to events_raw table
     event_payload = {
         "source": "prisma",
@@ -74,7 +72,7 @@ def construct_raw_event(msg):
         "msg_id": msg.get("message_id")
     }
 
-    logging.info(f'Constructed payload: {event_payload}')
+    print(f'Constructed payload: {event_payload}')
 
     return event_payload
 
