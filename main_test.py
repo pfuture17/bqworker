@@ -37,7 +37,7 @@ def test_not_pubsub_message(client):
     assert "Not a valid Pub/Sub Message" in str(e.value)
 
 
-def test_github_event_processed(client):    
+def test_prisma_event_process(client):    
     pubsub_msg = load_test_json_data('pubsub-payload-from-ingest-topic.json')
     github_event = load_test_json_data('reduced-prisma-scan-vulnerabilities-pull-request.json')
     
